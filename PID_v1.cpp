@@ -18,7 +18,7 @@
  *    reliable defaults, so we need to have the user set them.
  ***************************************************************************/
 PID::PID(double* Input, double* Output, double* Setpoint,
-        double Kp, double Ki, double Kd, int ControllerDirection)
+        double Kp, double Ki, double Kd, int ControllerDirection, double OutputLimit)
 {
 	
     myOutput = Output;
@@ -26,7 +26,11 @@ PID::PID(double* Input, double* Output, double* Setpoint,
     mySetpoint = Setpoint;
 	inAuto = false;
 	
-	PID::SetOutputLimits(0, 255);				//default output limit corresponds to 
+	ITerm = 0;
+	lastInput = 0;
+	error = 0;
+	
+	PID::SetOutputLimits(0, OutputLimit);    	//default output limit corresponds to 
 												//the arduino pwm limits
 
     SampleTime = 100;							//default Controller Sample Time is 0.1 seconds
@@ -53,7 +57,7 @@ bool PID::Compute()
    {
       /*Compute all the working error variables*/
 	  double input = *myInput;
-      double error = *mySetpoint - input;
+      error = *mySetpoint - input;
       ITerm+= (ki * error);
       if(ITerm > outMax) ITerm= outMax;
       else if(ITerm < outMin) ITerm= outMin;
@@ -182,6 +186,16 @@ void PID::SetControllerDirection(int Direction)
    controllerDirection = Direction;
 }
 
+/* resetPID()******************************************************************
+ * Resets the PID. Output will be zero and all history will be erased.
+ ******************************************************************************/
+void PID::resetPID()
+{
+	*myOutput = 0;
+	lastInput = 0;
+	ITerm = 0;
+}
+
 /* Status Funcions*************************************************************
  * Just because you set the Kp=-1 doesn't mean it actually happened.  these
  * functions query the internal state of the PID.  they're here for display 
@@ -190,6 +204,7 @@ void PID::SetControllerDirection(int Direction)
 double PID::GetKp(){ return  dispKp; }
 double PID::GetKi(){ return  dispKi;}
 double PID::GetKd(){ return  dispKd;}
+double PID::GetError() { return error;}
 int PID::GetMode(){ return  inAuto ? AUTOMATIC : MANUAL;}
 int PID::GetDirection(){ return controllerDirection;}
 

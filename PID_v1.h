@@ -16,7 +16,7 @@ class PID
 
   //commonly used functions **************************************************************************
     PID(double*, double*, double*,        // * constructor.  links the PID to the Input, Output, and 
-        double, double, double, int);     //   Setpoint.  Initial tuning parameters are also set here
+        double, double, double, int, double = 255);     //   Setpoint.  Initial tuning parameters are also set here
 	
     void SetMode(int Mode);               // * sets PID to either Manual (0) or Auto (non-0)
 
@@ -41,6 +41,7 @@ class PID
 										  //   once it is set in the constructor.
     void SetSampleTime(int);              // * sets the frequency, in Milliseconds, with which 
                                           //   the PID calculation is performed.  default is 100
+    void resetPID();
 										  
 										  
 										  
@@ -50,6 +51,7 @@ class PID
 	double GetKd();						  // where it's important to know what is actually 
 	int GetMode();						  //  inside the PID.
 	int GetDirection();					  //
+	double GetError();
 
   private:
 	void Initialize();
@@ -68,7 +70,8 @@ class PID
     double *myOutput;             //   This creates a hard link between the variables and the 
     double *mySetpoint;           //   PID, freeing the user from having to constantly tell us
                                   //   what these values are.  with pointers we'll just know.
-			  
+    double error;				// The error signal, i.e. the deviation of the input from the set point
+    
 	unsigned long lastTime;
 	double ITerm, lastInput;
 
